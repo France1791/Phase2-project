@@ -1,9 +1,8 @@
 import express, { request } from "express";
 import prisma from "../db/index.js";
 
+export default function petRouter(passport){
 const router = express.Router(); //build a router to append to server
-
-export default function petRouter() {
 
     // Get /pet router
     router.get("/", async (_request, response) => {
@@ -25,14 +24,15 @@ export default function petRouter() {
 
 
          //POST /pet
-         router.post("/", async (request, response) => {
+         router.post("/", passport.authenticate("jwt", { session: false}),
+         async (request, response) => {
             try{
                 const newPet = await prisma.pet.create({
                     data: {
                         name: request.body.name,
                         description: request.body.description,
                         specie: request.body.specie,
-                        userId: 1
+                        userId: request.user.id
                     }
                 });
                 if(newPet){
@@ -79,20 +79,35 @@ export default function petRouter() {
       })
 
       //EDIT /pet
-      router.put("/:petId", async (request, response) =>{
-          const petId = req.params.petId;
+      router.put("/:petId", passport.authenticate("jwt", {session: false}),
+      async (request, response) =>{
+          const petId = request.params.petId;
   
           try{
-              const editPet = await prisma.pet.updateMany( {
+              const editPet = await prisma.pet.updateMany({
                   where: {
-                      id: parseInt(petId)
+                      //id: parseInt(petId)
+                      id: petId,
+                      userId: request.user.id
                   },
                   data: {
                       name: request.body.name,
                       description: request.body.description,
                       specie: request.body.specie
                   }
-              })
+              });
+
+              if(editPet.count == 1){
+                response.status(200).json({
+                    success: true,
+                    message: "Edit pet!"
+                })
+              } else {
+                response: status(500).json({
+                    success: false,
+                    message: "No pet was edited!"
+                })
+              }
               response.status(200).json({
                   success: true,
                   pet: editPet
@@ -111,24 +126,39 @@ export default function petRouter() {
       } )
   
       //DELETE /pet
-      router.delete("/:petId", async (request, response) =>{
+      router.delete("/:petId", passport.authenticate("jwt", {session: false}),
+      async (request, response) =>{
           const petId = request.params.petId;
   
           try{
               const deletePet = await prisma.pet.delete( {
                   where: {
-                      id: parseInt(petId)
+                      //id: parseInt(petId)
+                      id: petId,
+                      userId: request.user.id
                   },
                   data: {
                       name: request.body.name,
                       description: request.body.description,
                       specie: request.body.specie
-                  }
-              })
+                  },
+              });
+
+              if(deletePet.count == 1){
+                response.status(200).json({
+                    success: true,
+                    message: "Delete the pet!"
+                })
+              } else {
+                response: status(500).json({
+                    success: false,
+                    message: "No pet was deleted!"
+                })
+              }
               response.status(200).json({
                   success: true,
                   pet: deletePet
-                })
+                });
   
      
             }
@@ -137,10 +167,9 @@ export default function petRouter() {
               response.status(404).json({
                 success: false,
                 message: "Could not delete the pet!"
-              })
+              });
             }
-  
-      } )
-
-return router 
+        });
+    
+return router;
 }
