@@ -21,8 +21,6 @@ model User {
 model Pet {
   id Int @unique @default(autoincrement())
    name String
-   username String
-   password String
   description String
   specie String
   userId Int

@@ -35,6 +35,7 @@ const router = express.Router(); //build a router to append to server
                         userId: request.user.id
                     }
                 });
+
                 if(newPet){
                     response.status(201).json({
                         success: true,
@@ -47,6 +48,7 @@ const router = express.Router(); //build a router to append to server
                     })
                 }
             } catch(e){
+              console.log(e);
                 response.status(500).json({
                     success: false,
                     message: "failed to find new pet",
@@ -133,33 +135,23 @@ const router = express.Router(); //build a router to append to server
           try{
               const deletePet = await prisma.pet.delete( {
                   where: {
-                      //id: parseInt(petId)
-                      id: petId,
-                      userId: request.user.id
+                      id: parseInt(petId)
+          
                   },
-                  data: {
-                      name: request.body.name,
-                      description: request.body.description,
-                      specie: request.body.specie
-                  },
+                  
               });
 
-              if(deletePet.count == 1){
+              if(deletePet){
                 response.status(200).json({
                     success: true,
                     message: "Delete the pet!"
                 })
               } else {
-                response: status(500).json({
+                response.status(500).json({
                     success: false,
                     message: "No pet was deleted!"
                 })
               }
-              response.status(200).json({
-                  success: true,
-                  pet: deletePet
-                });
-  
      
             }
           

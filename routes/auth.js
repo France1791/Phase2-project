@@ -14,7 +14,7 @@ router.post("/signup", async (request, response) => {
       },
     });
 
-    // if the user exists, send back a 401 because the user already exists
+    
     if (user) {
       response.status(401).json({
         success: false,
@@ -22,7 +22,6 @@ router.post("/signup", async (request, response) => {
       });
     } else {
       try {
-        //Hashes the password using argon2
         const hashedPassword = await argon2.hash(request.body.password);
 
         //Adds the user to our db using the new username and the hashed password. NEVER STORE A USER PASSWORD IN PLAIN TEXT
@@ -33,9 +32,9 @@ router.post("/signup", async (request, response) => {
           },
         });
 
-        //If the new user data is returned
+    
         if (newUser) {
-          //Send back a status of "Created"
+        
           response.status(201).json({
             success: true,
           });
